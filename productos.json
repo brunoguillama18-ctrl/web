@@ -1,0 +1,28 @@
+[
+  {
+    "_id": "1776426497995",
+    "nombre": "holaaaa",
+    "precio": 100,
+    "categoria": "mujer",
+    "stock": true,
+    "imagen": "/uploads/1776426497990-pasteleria 5.jpg"
+  },
+  {
+    "_id": "1776428475822",
+    "nombre": "pruebaa",
+    "precio": 100,
+    "talle": "M",
+    "categoria": "mujer",
+    "stock": true,
+    "imagen": "/uploads/1776428475820-pasteleria 3.jpg"
+  },
+  {
+    "_id": "1776428723110",
+    "nombre": "prueba",
+    "precio": 100,
+    "talle": "s",
+    "categoria": "mujer",
+    "stock": true,
+    "imagen": "/uploads/1776428723107-foto24.jpg"
+  }
+]

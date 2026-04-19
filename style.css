@@ -1,0 +1,450 @@
+/* VARIABLES ACTUALIZADAS PARA MANTENER EL FONDO */
+:root {
+    --bg-principal: rgba(253, 251, 251, 0.75); /* Blanco con transparencia */
+    --bg-tarjetas: rgba(255, 255, 255, 0.9);   /* Tarjetas un poco vidriadas */
+    --texto-principal: #333;
+    --header-bg: rgba(51, 51, 51, 0.9);
+    --border-color: #eee;
+}
+
+body.dark-mode {
+    --bg-principal: rgba(18, 18, 18, 0.85); /* Negro con transparencia */
+    --bg-tarjetas: rgba(30, 30, 30, 0.9);
+    --texto-principal: #f0f0f0;
+    --header-bg: rgba(0, 0, 0, 0.9);
+    --border-color: #333;
+}
+
+/* El truco está aquí: el body tiene la foto de fondo */
+body { 
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: url('https://images.unsplash.com/photo-1501183638710-841dd1904471');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: all 0.3s ease; 
+}
+
+/* El overlay es el filtro que oscurece o aclara la foto de fondo */
+.overlay {
+    background: var(--bg-principal); 
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
+    transition: background 0.3s ease;
+    width: 100%;
+}
+
+header { 
+    background: var(--header-bg); 
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+}
+
+header p {
+  font-size: 1.2rem;
+  margin-top: 10px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 0 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+nav {
+  margin: 20px auto;
+  background: #5d4037;
+  padding: 12px 20px;
+  border-radius: 40px;
+  width: fit-content;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+nav a {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: 0.3s;
+}
+
+nav a:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.card {
+  background: var(--bg-tarjetas);
+  color: var(--texto-principal);
+  padding: 25px;
+  border-radius: 15px;
+  margin: 20px 0;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  backdrop-filter: blur(5px);
+}
+
+.slider {
+  overflow: hidden;
+  margin-top: 15px;
+}
+
+.slider-track {
+  display: flex;
+  gap: 15px;
+  width: max-content;
+  animation: scroll 35s linear infinite;
+}
+
+.slider-track img {
+  height: 280px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: 0.3s;
+  object-fit: cover;
+}
+
+.slider-track img:hover {
+  transform: scale(1.02);
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ropa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  padding: 20px 0;
+}
+
+.ropa-card {
+  background: #8d6e63; 
+  color: white;
+  padding: 30px 20px;
+  text-align: center;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  transition: 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.ropa-card.activo {
+  background: #4e342e;
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+  border: 2px solid white;
+}
+
+.ropa-card:hover {
+  background: #5d4037;
+}
+
+.productos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 20px 0 60px 0;
+}
+
+.producto {
+  background: var(--bg-tarjetas);
+  color: var(--texto-principal);
+  border-radius: 15px;
+  width: 240px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(5px);
+}
+
+.producto-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover; 
+  border-bottom: 3px solid var(--border-color);
+}
+
+.producto-info {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.producto-info p {
+  font-size: 1.1rem;
+  margin: 5px 0 10px 0;
+}
+
+.producto-info b {
+  font-size: 1.4rem;
+  color: #5d4037;
+}
+
+body.dark-mode .producto-info b {
+  color: #d7ccc8;
+}
+
+.btn-agregar {
+  margin-top: 15px;
+  background: #25D366;
+  border: none;
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 800;
+  padding: 12px;
+  width: 100%;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(37, 211, 102, 0.3);
+  transition: 0.2s ease;
+}
+
+.btn-agregar:hover {
+  background: #1ebd5a;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(37, 211, 102, 0.4);
+}
+
+.btn-agregar:active {
+  transform: scale(0.95);
+}
+
+#cartBox {
+  position: fixed;
+  right: -360px;
+  top: 100px;
+  width: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--bg-tarjetas);
+  color: var(--texto-principal);
+  padding: 20px;
+  border-radius: 15px 0 0 15px;
+  transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+#cartBox.open {
+  right: 0;
+}
+
+#cartBox h3 {
+  margin-top: 0;
+  color: #5d4037;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.carrito-vacio {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin: 20px 0;
+}
+
+.cartItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.95rem;
+}
+
+.btn-eliminar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: transform 0.2s;
+}
+
+.btn-eliminar:hover {
+  transform: scale(1.3);
+}
+
+#cartTotal {
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-align: right;
+  margin: 15px 0;
+  color: var(--texto-principal);
+}
+
+.btn-comprar {
+  background: #25D366;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-comprar:hover {
+  background: #1ebd5a;
+  transform: translateY(-2px);
+}
+
+.btn-vaciar {
+  background: transparent;
+  color: #d32f2f;
+  border: 1px solid #d32f2f;
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-vaciar:hover {
+  background: #ffebee;
+}
+
+body.dark-mode .btn-vaciar:hover {
+  background: rgba(211, 47, 47, 0.2);
+}
+
+#cartButton {
+  position: fixed;
+  bottom: 85px;
+  right: 15px;
+  background: #5d4037;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: transform 0.3s;
+  z-index: 999;
+}
+
+#cartButton:hover, .whatsapp:hover {
+  transform: scale(1.1);
+}
+
+.whatsapp {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: #25D366;
+  padding: 15px 20px;
+  border-radius: 50px;
+  color: white;
+  text-decoration: none;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: transform 0.3s;
+  z-index: 999;
+}
+
+#toast {
+  visibility: hidden;
+  min-width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 16px;
+  position: fixed;
+  z-index: 3000;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  font-size: 1rem;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+  opacity: 0;
+  transition: opacity 0.4s, bottom 0.4s;
+}
+
+#toast.show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 50px;
+}
+
+#modal {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+#modal img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+footer {
+  background: rgba(46, 28, 21, 0.95);
+  color: #ccc;
+  padding: 40px 20px;
+  margin-top: auto; 
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 20px;
+  text-align: center;
+}
+
+.footer-content h3 {
+  color: white;
+  margin-bottom: 10px;
+}
+
+.instagram-link {
+  color: #E1306C;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: 0.3s;
+}
+
+.instagram-link:hover {
+  color: #fd1d1d;
+  text-shadow: 0 0 5px rgba(225, 48, 108, 0.5);
+}

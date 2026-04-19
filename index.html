@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Covicosta Cooperativa</title>
+
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* VARIABLES PARA EL MODO OSCURO CON TRANSPARENCIA */
+  :root {
+      --bg-principal: rgba(253, 251, 251, 0.85); /* Blanco transparente */
+      --bg-tarjetas: white;
+      --texto-principal: #333;
+      --texto-secundario: #666;
+      --header-bg: rgba(51, 51, 51, 0.95);
+      --border-color: #eee;
+  }
+  
+  body.dark-mode {
+      --bg-principal: rgba(18, 18, 18, 0.85); /* Negro transparente */
+      --bg-tarjetas: #1e1e1e;
+      --texto-principal: #f0f0f0;
+      --texto-secundario: #aaa;
+      --header-bg: rgba(0, 0, 0, 0.95);
+      --border-color: #333;
+  }
+
+  /* Dejamos el body sin color para que se vea tu imagen de fondo de style.css */
+  body { 
+      margin: 0; 
+      color: var(--texto-principal); 
+      transition: color 0.3s ease; 
+  }
+
+  /* El overlay es el que hace la magia de oscurecer o aclarar la imagen de fondo */
+  .overlay {
+      background: var(--bg-principal);
+      min-height: 100vh;
+      transition: background 0.3s ease;
+  }
+
+  header { background: var(--header-bg); transition: all 0.3s ease; position: relative;}
+  
+  .producto, .checkout-card, .card { background: var(--bg-tarjetas) !important; color: var(--texto-principal) !important; border-color: var(--border-color); }
+  .producto p, .producto b { color: var(--texto-principal); }
+  .talle-tag { background: var(--border-color); color: var(--texto-principal); }
+
+  /* BOTÓN MODO OSCURO */
+  .btn-theme { position: absolute; top: 20px; right: 20px; background: transparent; border: none; font-size: 24px; cursor: pointer; }
+
+  /* ESTILOS DE BUSCADOR Y STOCK */
+  .buscador-input { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-tarjetas); color: var(--texto-principal); font-family: 'Poppins', sans-serif; font-size: 16px; box-sizing: border-box; }
+  .sin-stock { opacity: 0.5; pointer-events: none; }
+  
+  /* ETIQUETA NUEVO Y TALLE */
+  .producto { position: relative; border: 1px solid var(--border-color); } 
+  .badge-nuevo { position: absolute; background: #FFD700; color: #000; padding: 4px 8px; font-weight: 700; border-radius: 5px; font-size: 12px; top: 10px; left: 10px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  .talle-tag { font-size: 0.8rem; padding: 3px 8px; border-radius: 12px; margin-left: 8px; font-weight: 600; }
+  
+  /* CHECKOUT MODAL */
+  #checkoutModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; justify-content: center; align-items: center; }
+  .checkout-card { padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; }
+  .resumen-lista { text-align: left; margin: 20px 0; max-height: 200px; overflow-y: auto; }
+  .resumen-item { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding: 8px 0; }
+
+  /* NOTIFICACIÓN "ALGUIEN ESTÁ VIENDO" (URGENCIA) */
+  #socialToast { position: fixed; bottom: 20px; left: 20px; background: var(--bg-tarjetas); color: var(--texto-principal); padding: 15px 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 4000; font-size: 14px; font-weight: bold; border-left: 5px solid #ff4d4d; transform: translateX(-150%); transition: transform 0.5s ease; display: flex; align-items: center; gap: 10px;}
+  #socialToast.show { transform: translateX(0); }
+</style>
+
+<script>
+/* --- MODO OSCURO LÓGICA --- */
+function inicializarTema() {
+    const temaGuardado = localStorage.getItem('covicosta_theme');
+    if (temaGuardado === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('btnTema').innerText = '☀️';
+    }
+}
+
+function toggleTema() {
+    const body = document.body;
+    body.classList.toggle('dark-mode');
+    const btn = document.getElementById('btnTema');
+    
+    if (body.classList.contains('dark-mode')) {
+        localStorage.setItem('covicosta_theme', 'dark');
+        btn.innerText = '☀️';
+    } else {
+        localStorage.setItem('covicosta_theme', 'light');
+        btn.innerText = '🌙';
+    }
+}
+
+/* --- NAVEGACIÓN --- */
+function abrirRopa(){ ocultarTodo(); document.getElementById('ropaPage').style.display='block'; }
+function volverInicio(){ ocultarTodo(); document.getElementById('mainContent').style.display='block'; }
+function ocultarTodo(){ document.getElementById('mainContent').style.display='none'; document.getElementById('ropaPage').style.display='none'; }
+
+/* --- SLIDER DE FOTOS --- */
+const fotos = []; for(let i=1;i<=33;i++){ fotos.push(`img/foto${i}.jpg`); }
+let productos = []; 
+
+window.addEventListener("load", () => {
+  inicializarTema(); // Carga el modo oscuro si lo tenía guardado
+  
+  const track = document.getElementById("sliderTrack");
+  let html = "";
+  fotos.forEach(f=>{ html += `<img src="${f}" onerror="this.src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=300&q=80'" onclick="verImagen(this.src)">`; });
+  fotos.forEach(f=>{ html += `<img src="${f}" onerror="this.src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=300&q=80'" onclick="verImagen(this.src)">`; });
+  track.innerHTML = html;
+
+  cargarCarrito(); 
+  cargarProductosDesdeBD(); 
+});
+
+/* --- LÓGICA DE PRODUCTOS --- */
+async function cargarProductosDesdeBD() {
+  try {
+    const res = await fetch('/api/productos'); 
+    productos = await res.json();
+    renderProductos(); 
+    iniciarUrgencia(); // Inicia los carteles falsos de visitas
+  } catch (err) { console.error("Error al cargar", err); }
+}
+
+function verImagen(src){ document.getElementById("modalImg").src = src; document.getElementById("modal").style.display="flex"; }
+function cerrarModal(){ document.getElementById("modal").style.display="none"; }
+
+let filtro = "todos";
+function filtrar(cat){
+  filtro = cat;
+  document.querySelectorAll('.ropa-card').forEach(btn => btn.classList.remove('activo'));
+  document.getElementById('btn-' + cat).classList.add('activo');
+  renderProductos();
+}
+
+function renderProductos(){
+  const cont = document.getElementById("productosContainer");
+  cont.innerHTML = "";
+  const textoBusqueda = document.getElementById('buscador').value.toLowerCase();
+
+  productos
+    .filter(p => p.stock !== false) 
+    .filter(p => filtro === "todos" || p.categoria === filtro)
+    .filter(p => p.nombre.toLowerCase().includes(textoBusqueda)) 
+    .forEach(p => {
+      const esNuevo = (Date.now() - Number(p._id)) < 172800000;
+      const badge = esNuevo ? `<div class="badge-nuevo">✨ NUEVO</div>` : "";
+      const talleStr = p.talle ? p.talle : "Único";
+
+      cont.innerHTML += `
+        <div class="producto">
+          ${badge}
+          <img src="${p.imagen}" alt="${p.nombre}" class="producto-img">
+          <div class="producto-info">
+            <p>${p.nombre} <span class="talle-tag">${talleStr}</span></p>
+            <b>$${p.precio}</b>
+            <button class="btn-agregar" onclick="agregarCarrito('${p.nombre}', ${p.precio})">Agregar</button>
+          </div>
+        </div>
+      `;
+    });
+}
+
+/* --- CARRITO Y LOCALSTORAGE --- */
+let carrito = [];
+
+function cargarCarrito() { const g = localStorage.getItem('carritoCovicosta'); if(g) { carrito = JSON.parse(g); actualizarCarrito(); } }
+function guardarCarrito() { localStorage.setItem('carritoCovicosta', JSON.stringify(carrito)); }
+
+function agregarCarrito(nombre, precio){
+  carrito.push({nombre, precio});
+  guardarCarrito(); actualizarCarrito(); mostrarToast(nombre);
+}
+
+function eliminar(i){ carrito.splice(i,1); guardarCarrito(); actualizarCarrito(); }
+function vaciarCarrito(){ carrito = []; guardarCarrito(); actualizarCarrito(); }
+function toggleCart(){ document.getElementById("cartBox").classList.toggle("open"); }
+
+function mostrarToast(nombre) {
+  const toast = document.getElementById("toast");
+  toast.innerText = "✅ " + nombre + " agregado";
+  toast.classList.add("show");
+  setTimeout(() => { toast.classList.remove("show"); }, 2500);
+}
+
+function actualizarCarrito(){
+  const cont = document.getElementById("cartItems");
+  const count = document.getElementById("cartCount");
+  const btnComprar = document.getElementById("btnComprar");
+  const btnVaciar = document.getElementById("btnVaciar");
+  cont.innerHTML = ""; let suma = 0;
+
+  if (carrito.length === 0) {
+    cont.innerHTML = "<p class='carrito-vacio'>Tu carrito está vacío.</p>";
+    btnComprar.style.display = "none"; btnVaciar.style.display = "none";
+  } else {
+    carrito.forEach((p,i)=>{
+      suma += p.precio;
+      cont.innerHTML += `<div class="cartItem"><span>${p.nombre} - <b>$${p.precio}</b></span><button class="btn-eliminar" onclick="eliminar(${i})">❌</button></div>`;
+    });
+    btnComprar.style.display = "block"; btnVaciar.style.display = "block";
+  }
+  count.innerText = carrito.length;
+  document.getElementById("cartTotal").innerText = "Total: $" + suma;
+}
+
+/* --- CHECKOUT MODAL --- */
+function abrirCheckout(){
+  if(carrito.length === 0) return;
+  toggleCart(); 
+  const lista = document.getElementById("resumenLista");
+  let total = 0; lista.innerHTML = "";
+  carrito.forEach(item => {
+    lista.innerHTML += `<div class="resumen-item"><span>${item.nombre}</span> <b>$${item.precio}</b></div>`;
+    total += item.precio;
+  });
+  document.getElementById("resumenTotal").innerText = "Total a pagar: $" + total;
+  document.getElementById("checkoutModal").style.display = "flex";
+}
+
+function cerrarCheckout(){ document.getElementById("checkoutModal").style.display = "none"; }
+
+function confirmarCompra(){
+  let msg = "Hola, quiero hacer el siguiente pedido en Covicosta:%0A%0A";
+  carrito.forEach(p=>{ msg += "- " + p.nombre + "%0A"; });
+  let suma = carrito.reduce((acc, el) => acc + el.precio, 0);
+  msg += "%0ATotal: $" + suma;
+  window.open("https://wa.me/59894921342?text=" + msg, "_blank");
+  cerrarCheckout();
+}
+
+/* --- MARKETING: ALGUIEN ESTA VIENDO --- */
+function iniciarUrgencia() {
+    setInterval(() => {
+        const activos = productos.filter(p => p.stock !== false);
+        if (activos.length === 0) return;
+        
+        const prendaAlAzar = activos[Math.floor(Math.random() * activos.length)];
+        const vistas = Math.floor(Math.random() * 5) + 2; 
+        
+        mostrarSocialToast(`🔥 ${vistas} personas están viendo: ${prendaAlAzar.nombre}`);
+    }, 25000); 
+}
+
+function mostrarSocialToast(mensaje) {
+    const toast = document.getElementById("socialToast");
+    toast.innerHTML = mensaje;
+    toast.classList.add("show");
+    setTimeout(() => { toast.classList.remove("show"); }, 5000); 
+}
+</script>
+</head>
+<body>
+
+<div class="overlay">
+
+<header>
+  <button id="btnTema" class="btn-theme" onclick="toggleTema()">🌙</button>
+  
+  <h1>Covicosta Cooperativa</h1>
+  <p>Ropa de segunda mano - Todo a $100</p>
+</header>
+
+<div class="container">
+  <nav>
+    <a href="#" onclick="volverInicio()">Inicio</a>
+    <a href="#" onclick="abrirRopa()">Ropa</a>
+  </nav>
+</div>
+
+<div class="container" id="mainContent">
+  <div class="card">
+    <p style="text-align: center; font-size: 1.2rem; font-weight: 600;">Comunidad + trabajo + ropa reutilizada</p>
+    <div class="slider">
+      <div class="slider-track" id="sliderTrack"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Ubicación</h2>
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3276.2063846958185!2d-55.934588423495676!3d-34.800749167931784!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x959f8bc2441c8325%3A0x90f5d012a5975fc!2sCOOPERATIVA%20COVICOSTA%20III!5e0!3m2!1ses!2suy!4v1776033031170!5m2!1ses!2suy" width="100%" height="300" style="border:0;border-radius:12px;"></iframe>
+  </div>
+</div>
+
+<div class="container ropa-page" id="ropaPage" style="display: none;">
+  <h2 style="text-align:center;">Covicosta Second Hand</h2>
+  <p style="text-align:center; font-size: 1.2rem; font-weight: bold;">Todo a $100</p>
+
+  <input type="text" id="buscador" class="buscador-input" placeholder="🔍 Buscar remera, pantalón..." onkeyup="renderProductos()">
+
+  <div class="ropa-grid">
+    <div class="ropa-card activo" id="btn-todos" onclick="filtrar('todos')"><span>Todos</span></div>
+    <div class="ropa-card" id="btn-mujer" onclick="filtrar('mujer')"><span>Mujer</span></div>
+    <div class="ropa-card" id="btn-hombre" onclick="filtrar('hombre')"><span>Hombre</span></div>
+    <div class="ropa-card" id="btn-ninos" onclick="filtrar('ninos')"><span>Niños</span></div>
+  </div>
+
+  <div class="productos" id="productosContainer"></div>
+</div>
+
+<footer>
+  <div class="container footer-content">
+    <div><h3>Covicosta Cooperativa</h3><p>Comunidad + Trabajo + Ropa reutilizada</p></div>
+    <div><h3>Seguinos</h3><a href="https://www.instagram.com/covicosta2.uy/" target="_blank" class="instagram-link">📷 @covicosta2.uy</a></div>
+  </div>
+</footer>
+
+<div id="modal" onclick="cerrarModal()"><img id="modalImg"></div>
+
+<div id="checkoutModal">
+  <div class="checkout-card">
+      <h2>Confirmar Pedido 🛍️</h2>
+      <div id="resumenLista" class="resumen-lista"></div>
+      <h3 id="resumenTotal"></h3>
+      <button class="btn-comprar" style="width:100%; margin-top:10px;" onclick="confirmarCompra()">Enviar por WhatsApp ✅</button>
+      <button onclick="cerrarCheckout()" style="background:transparent; color:#ff4d4d; border:none; width:100%; margin-top:15px; cursor:pointer; font-weight:bold;">Volver a la tienda</button>
+  </div>
+</div>
+
+<div id="cartBox">
+  <h3>Tu Carrito 🛒</h3>
+  <div id="cartItems"></div>
+  <p id="cartTotal">Total: $0</p>
+  <button id="btnComprar" class="btn-comprar" onclick="abrirCheckout()">Ir a Pagar</button>
+  <button id="btnVaciar" class="btn-vaciar" onclick="vaciarCarrito()">Vaciar carrito</button>
+</div>
+
+<div id="cartButton" onclick="toggleCart()">🛒 <span id="cartCount">0</span></div>
+<a class="whatsapp" href="https://wa.me/59894921342" target="_blank">💬</a>
+
+<div id="toast">¡Agregado al carrito!</div>
+
+<div id="socialToast"></div>
+
+</div>
+</body>
+</html>
